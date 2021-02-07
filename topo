@@ -1,0 +1,50 @@
+#!/bin/bash
+
+echo "Drawing the United States..."
+
+# start a temp directory for intermediate files
+mkdir -p temp
+
+# reorganize FIPS codes into ndjson
+ndjson-cat fips.json \
+    | ndjson-split \
+    | ndjson-map '{fips: d[0], usps: d[1].toLowerCase(), name: d[2].toLowerCase()}' \
+    > temp/fips.ndjson
+
+# nation shapefile -> geojson -> geographic projection
+shp2json shp/cb_2019_us_nation_5m/cb_2019_us_nation_5m.shp \
+    | geoproject 'd3.geoAlbersUsa().fitSize([960, 600], d)' \
+    > temp/nation.json
+
+# state & cd shapefiles -> geojson -> geographic projection -> ndjson
+shp2json shp/cb_2019_us_state_5m/cb_2019_us_state_5m.shp \
+    | geoproject 'd3.geoAlbersUsa().fitSize([960, 600], d)' \
+    | ndjson-split 'd.features' \
+    > temp/states.ndjson
+
+shp2json shp/cb_2019_us_cd116_5m/cb_2019_us_cd116_5m.shp \
+    | geoproject 'd3.geoAlbersUsa().fitSize([960, 600], d)' \
+    | ndjson-split 'd.features' \
+    > temp/cds.ndjson
+
+# join states & cds with FIPS data, add properties, rebuild geojson
+ndjson-join 'd.properties.STATEFP' 'd.fips' temp/states.ndjson temp/fips.ndjson \
+    | ndjson-map 'd[0].properties = {name: d[1].name, usps: d[1].usps}, d[0]' \
+    | ndjson-reduce 'p.features.push(d), p' '{type: "FeatureCollection", features: []}' \
+    > temp/states.json
+
+ndjson-join 'd.properties.STATEFP' 'd.fips' temp/cds.ndjson temp/fips.ndjson \
+    | ndjson-map 'd[0].properties = {name: `${d[1].usps}-${+d[0].properties.CD116FP}`, number: +d[0].properties.CD116FP}, d[0]' \
+    | ndjson-reduce 'p.features.push(d), p' '{type: "FeatureCollection", features: []}' \
+    > temp/cds.json
+
+# geojson -> topojson
+geo2topo nation=temp/nation.json states=temp/states.json cds=temp/cds.json \
+    | toposimplify -f -p 0.25 \
+    | topoquantize 1e5 \
+    > us.json
+
+# delete temp directory
+rm -rf temp
+
+echo "Done!"

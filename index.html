@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rep-map</title>
+    
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cutive+Mono&display=swap" rel="stylesheet">
+    <script defer src="https://d3js.org/d3.v6.min.js"></script>
+    <script defer src="https://unpkg.com/topojson@3"></script>
+    <script defer src="https://kit.fontawesome.com/a2b3e12751.js" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="app.js"></script>
+</head>
+<body>
+    <div class="widgets">
+        <div class="controls">
+            <form class="controls__search">
+                <input type="text" name="query" placeholder="e.g. NY-12, TX, Minnesota" autocomplete="off" size="25">
+                <button type="submit"><i class="fas fa-search fa-lg"></i></button>
+            </form>
+            <div class="controls__row">
+                <button class="controls__reset"><i class="fas fa-undo-alt fa-lg"></i></button>
+                <p class="controls__status"></p>
+            </div>
+        </div>
+
+        <div class="congress">
+            <div class="congress__card congress__senA hidden">
+                <div class="party-marker"></div>
+                <div class="info">
+                    <p class="name"></p>
+                    <p class="serves"></p>
+                    <p class="term"></p>
+                </div>
+            </div>
+            <div class="congress__card congress__senB hidden">
+                <div class="party-marker"></div>
+                <div class="info">
+                    <p class="name"></p>
+                    <p class="serves"></p>
+                    <p class="term"></p>
+                </div>
+            </div>
+            <div class="congress__card congress__rep hidden">
+                <div class="party-marker"></div>
+                <div class="info">
+                    <p class="name"></p>
+                    <p class="serves"></p>
+                    <p class="term"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
